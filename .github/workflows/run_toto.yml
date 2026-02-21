@@ -1,0 +1,32 @@
+name: Toto Agent Tracker
+on:
+  schedule:
+    - cron: '0 * * * *'  # רץ בכל שעה עגולה
+  workflow_dispatch:      # מאפשר הרצה ידנית בלחיצת כפתור
+
+jobs:
+  run-toto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        
+      - name: Run Agent
+        run: python agent_engine.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          
+      - name: Push updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Toto Bot"
+          git add agent_memory.json
+          git commit -m "update soccer news" || exit 0
+          git push origin main --force
